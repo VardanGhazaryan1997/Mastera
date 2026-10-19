@@ -35,7 +35,9 @@ app.MapHealthChecks("/health");
 
 app.Run();
 
+#pragma warning disable CA1050 // Program must stay in the global namespace for top-level statements.
 /// <summary>Exposed so functional tests can host the API with WebApplicationFactory.</summary>
 public partial class Program
 {
 }
+#pragma warning restore CA1050
