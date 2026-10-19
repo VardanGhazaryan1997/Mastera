@@ -53,6 +53,21 @@ public sealed partial record TenantSlug
         return new TenantSlug(value);
     }
 
+    /// <summary>Non-throwing variant for untrusted input such as a request's host name.</summary>
+    public static bool TryCreate(string? raw, [NotNullWhen(true)] out TenantSlug? slug)
+    {
+        try
+        {
+            slug = Create(raw);
+            return true;
+        }
+        catch (DomainException)
+        {
+            slug = null;
+            return false;
+        }
+    }
+
     public override string ToString() => Value;
 
     [GeneratedRegex("^[a-z0-9]+(-[a-z0-9]+)*$", RegexOptions.CultureInvariant)]

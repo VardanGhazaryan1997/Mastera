@@ -20,6 +20,17 @@ public sealed class Tenant : Entity<TenantId>
         CreatedAt = createdAt;
     }
 
+    // For EF Core materialization only.
+    private Tenant()
+        : base(default)
+    {
+        Name = string.Empty;
+        Slug = null!;
+        TimeZone = null!;
+        Currency = null!;
+        DefaultLanguage = null!;
+    }
+
     public string Name { get; private set; }
 
     public TenantSlug Slug { get; private set; }

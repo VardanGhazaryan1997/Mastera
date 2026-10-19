@@ -11,8 +11,16 @@ EF Core, Npgsql or ASP.NET Core.
 - One PostgreSQL database; every tenant-owned table has `tenant_id`.
 - Tenant resolved from the subdomain (`{salon}.mastera.ge`) for the public site, or from the user's
   active membership in the dashboard.
-- EF Core global query filter + SaveChanges interceptor (Epic 1.3), plus PostgreSQL Row-Level
-  Security as a second safety layer (Epic 1.4).
+- Tenant-owned entities implement `ITenantOwned`. `MasteraDbContext` adds a query filter
+  (`TenantId == CurrentTenantId`) to each of them automatically; with no current tenant every query is empty.
+- `TenantSaveChangesInterceptor` stamps new rows with the current tenant and throws
+  `TenantIsolationException` on any insert, update or delete of another tenant's row.
+- `TenantConnectionInterceptor` sets the PostgreSQL setting `app.tenant_id` on every connection open.
+  Every tenant-owned table gets a row-level security policy on it: call
+  `migrationBuilder.EnableTenantRowLevelSecurity("TableName")` in the migration that creates the table.
+- **Superusers bypass row-level security.** In staging and production the API must connect as a normal role
+  (`NOSUPERUSER NOBYPASSRLS`), not as the database owner. The local docker-compose user is a superuser,
+  so locally only the EF Core filter protects you; the integration tests cover the database policy.
 
 ## Time
 

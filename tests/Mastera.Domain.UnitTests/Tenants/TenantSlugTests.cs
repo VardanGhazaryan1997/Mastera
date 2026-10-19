@@ -71,3 +71,24 @@ public sealed class TenantSlugTests
         TenantSlug.Create("Barber-House").ShouldBe(TenantSlug.Create("barber-house"));
     }
 }
+
+public sealed class TenantSlugTryCreateTests
+{
+    [Fact]
+    public void TryCreate_returns_the_slug_for_valid_input()
+    {
+        TenantSlug.TryCreate("Barber-House", out var slug).ShouldBeTrue();
+        slug!.Value.ShouldBe("barber-house");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("ab")]
+    [InlineData("bad--slug")]
+    [InlineData("www")]
+    public void TryCreate_returns_false_instead_of_throwing(string? raw)
+    {
+        TenantSlug.TryCreate(raw, out var slug).ShouldBeFalse();
+        slug.ShouldBeNull();
+    }
+}

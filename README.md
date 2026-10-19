@@ -60,6 +60,16 @@ pnpm dev:booking                          # http://localhost:5174
 Useful local URLs: OpenAPI `http://localhost:5080/openapi/v1.json`, health `http://localhost:5080/health`,
 Mailpit inbox `http://localhost:8025`.
 
+## Database migrations
+
+```powershell
+dotnet tool restore                                   # once: installs dotnet-ef from .config/dotnet-tools.json
+dotnet ef migrations add <Name> -p src/Mastera.Infrastructure -s src/Mastera.Api -o Persistence/Migrations
+dotnet ef database update -p src/Mastera.Infrastructure -s src/Mastera.Api
+```
+
+A test fails if the model has changes that no migration covers.
+
 ## Tests
 
 ```powershell

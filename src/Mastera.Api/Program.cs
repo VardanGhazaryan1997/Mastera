@@ -1,3 +1,4 @@
+using Mastera.Api.Tenancy;
 using Mastera.Application;
 using Mastera.Infrastructure;
 using Serilog;
@@ -14,8 +15,9 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 
+builder.Services.AddTenancy(builder.Configuration);
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure();
 
 var app = builder.Build();
 
@@ -25,6 +27,8 @@ app.UseStatusCodePages();
 
 app.UseSerilogRequestLogging();
 
+app.UseMiddleware<TenantResolutionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -32,6 +36,7 @@ if (app.Environment.IsDevelopment())
 
 // Liveness: the process is up. Readiness checks (database, storage) are added in later epics.
 app.MapHealthChecks("/health");
+app.MapTenantEndpoints();
 
 app.Run();
 

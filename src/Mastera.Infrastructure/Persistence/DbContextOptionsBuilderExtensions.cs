@@ -12,12 +12,14 @@ public static class DbContextOptionsBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
-        return builder.UseNpgsql(connectionString, npgsql =>
-        {
-            npgsql.UseNodaTime();
-            npgsql.MigrationsHistoryTable(MigrationsHistoryTable);
-            npgsql.MigrationsAssembly(typeof(MasteraDbContext).Assembly.GetName().Name);
-        });
+        return builder
+            .UseNpgsql(connectionString, npgsql =>
+            {
+                npgsql.UseNodaTime();
+                npgsql.MigrationsHistoryTable(MigrationsHistoryTable);
+                npgsql.MigrationsAssembly(typeof(MasteraDbContext).Assembly.GetName().Name);
+            })
+            .AddInterceptors(TenantSaveChangesInterceptor.Instance, TenantConnectionInterceptor.Instance);
     }
 
     public static DbContextOptionsBuilder<TContext> UseMastera<TContext>(
