@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: mastera
       POSTGRES_PASSWORD: mastera
     ports:
-      - "5432:5432"
+      - "55432:5432"   # 55432 on your PC, so it never clashes with other PostgreSQL servers or containers
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -21,8 +21,8 @@ services:
     image: chrislusf/seaweedfs:latest
     command: "server -s3 -dir=/data -master.volumeSizeLimitMB=256"
     ports:
-      - "8333:8333"   # S3 API
-      - "9333:9333"   # master UI
+      - "18333:8333"   # S3 API (18333 on your PC to avoid clashes)
+      - "19333:9333"   # master UI
     volumes:
       - seaweed:/data
 
