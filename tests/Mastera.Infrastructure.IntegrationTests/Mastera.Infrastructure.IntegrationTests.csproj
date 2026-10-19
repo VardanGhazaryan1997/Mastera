@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Runs against a real PostgreSQL in Docker (Testcontainers). Docker must be running. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Mastera.Infrastructure\Mastera.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.PostgreSql" />
+  </ItemGroup>
+</Project>

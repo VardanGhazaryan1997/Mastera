@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Mastera.Domain\Mastera.Domain.csproj" />
+  </ItemGroup>
+</Project>
