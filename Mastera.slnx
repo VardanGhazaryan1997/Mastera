@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Mastera.Domain/Mastera.Domain.csproj" />
+    <Project Path="src/Mastera.Application/Mastera.Application.csproj" />
+    <Project Path="src/Mastera.Infrastructure/Mastera.Infrastructure.csproj" />
+    <Project Path="src/Mastera.Api/Mastera.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Mastera.Domain.UnitTests/Mastera.Domain.UnitTests.csproj" />
+    <Project Path="tests/Mastera.Application.UnitTests/Mastera.Application.UnitTests.csproj" />
+    <Project Path="tests/Mastera.Infrastructure.IntegrationTests/Mastera.Infrastructure.IntegrationTests.csproj" />
+    <Project Path="tests/Mastera.Api.FunctionalTests/Mastera.Api.FunctionalTests.csproj" />
+    <Project Path="tests/Mastera.ArchitectureTests/Mastera.ArchitectureTests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path=".editorconfig" />
+  </Folder>
+</Solution>

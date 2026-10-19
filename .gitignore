@@ -1,0 +1,22 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+*.trx
+# Rider / VS Code
+.idea/
+.vscode/*
+!.vscode/extensions.json
+# Node
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+# Env
+.env
+.env.*
+!.env.example
