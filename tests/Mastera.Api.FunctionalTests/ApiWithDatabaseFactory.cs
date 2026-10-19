@@ -1,6 +1,9 @@
+using Mastera.Domain.Memberships;
 using Mastera.Domain.Tenants;
+using Mastera.Infrastructure.Identity;
 using Mastera.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +26,8 @@ public sealed class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAs
 
     public TenantId SeededTenantId { get; private set; }
 
+    public const string Password = "secret123";
+
     public HttpClient CreateClientFor(string host) =>
         CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri($"http://{host}") });
 
@@ -44,6 +49,33 @@ public sealed class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAs
         db.Tenants.Add(tenant);
         await db.SaveChangesAsync();
         SeededTenantId = tenant.Id;
+    }
+
+    /// <summary>A client on the platform domain (no salon from the subdomain), keeping cookies between calls.</summary>
+    public HttpClient CreatePlatformClient() => CreateClientFor(RootDomain);
+
+    /// <summary>Creates a user account and, if <paramref name="role"/> is given, makes them a member of the seeded salon.</summary>
+    public async Task<string> CreateUserAsync(MembershipRole? role)
+    {
+        var email = $"user-{Guid.NewGuid():N}@example.ge";
+
+        using var scope = Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = new ApplicationUser { UserName = email, Email = email, DisplayName = "Test User" };
+        var created = await users.CreateAsync(user, Password);
+        if (!created.Succeeded)
+        {
+            throw new InvalidOperationException(string.Join(", ", created.Errors.Select(e => e.Description)));
+        }
+
+        if (role is { } r)
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MasteraDbContext>();
+            db.Memberships.Add(Membership.Create(SeededTenantId, user.Id, r, SystemClock.Instance.GetCurrentInstant()));
+            await db.SaveChangesAsync();
+        }
+
+        return email;
     }
 
     public override async ValueTask DisposeAsync()

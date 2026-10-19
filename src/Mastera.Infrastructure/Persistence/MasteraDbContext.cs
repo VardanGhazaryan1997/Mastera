@@ -1,12 +1,15 @@
 using System.Reflection;
 using Mastera.Application.Tenancy;
+using Mastera.Domain.Memberships;
 using Mastera.Domain.Tenants;
+using Mastera.Infrastructure.Identity;
 using Mastera.Infrastructure.Persistence.Converters;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mastera.Infrastructure.Persistence;
 
-public class MasteraDbContext : DbContext
+public class MasteraDbContext : IdentityUserContext<ApplicationUser, Guid>
 {
     /// <summary>Used when there is no current tenant. No row ever has this id, so queries return nothing.</summary>
     public static readonly TenantId NoTenant = default;
@@ -31,6 +34,8 @@ public class MasteraDbContext : DbContext
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
+    public DbSet<Membership> Memberships => Set<Membership>();
+
     /// <summary>
     /// The tenant every query is filtered by and every write is stamped with.
     /// Read by EF Core each time a query runs, and by the connection interceptor for row-level security.
@@ -40,12 +45,18 @@ public class MasteraDbContext : DbContext
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         ArgumentNullException.ThrowIfNull(configurationBuilder);
+        base.ConfigureConventions(configurationBuilder);
         configurationBuilder.Properties<TenantId>().HaveConversion<TenantIdConverter>();
+        configurationBuilder.Properties<MembershipId>().HaveConversion<MembershipIdConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
+
+        // Identity tables (users, claims, logins, tokens). Roles are per salon, see Membership.
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MasteraDbContext).Assembly);
 
         var tenantOwned = modelBuilder.Model.GetEntityTypes()

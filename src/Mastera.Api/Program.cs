@@ -1,3 +1,5 @@
+using Mastera.Api.Auth;
+using Mastera.Api.Salons;
 using Mastera.Api.Tenancy;
 using Mastera.Application;
 using Mastera.Infrastructure;
@@ -16,6 +18,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddTenancy(builder.Configuration);
+builder.Services.AddMasteraAuth(builder.Environment);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 
@@ -27,7 +30,9 @@ app.UseStatusCodePages();
 
 app.UseSerilogRequestLogging();
 
+app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -37,6 +42,8 @@ if (app.Environment.IsDevelopment())
 // Liveness: the process is up. Readiness checks (database, storage) are added in later epics.
 app.MapHealthChecks("/health");
 app.MapTenantEndpoints();
+app.MapAuthEndpoints();
+app.MapSalonEndpoints();
 
 app.Run();
 

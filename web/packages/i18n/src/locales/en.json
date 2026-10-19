@@ -1,6 +1,14 @@
 {
-  "common": { "appName": "Mastera" },
-  "language": { "label": "Language", "ka": "ქართული", "ru": "Русский", "en": "English" },
+  "common": {
+    "appName": "Mastera",
+    "loading": "Loading…"
+  },
+  "language": {
+    "label": "Language",
+    "ka": "ქართული",
+    "ru": "Русский",
+    "en": "English"
+  },
   "dashboard": {
     "title": "Salon dashboard",
     "welcome": "Bookings, masters and schedules in one place."
@@ -9,5 +17,42 @@
     "title": "Book an appointment",
     "intro": "Pick a service, a master and a time that suits you.",
     "cta": "Choose a time"
+  },
+  "auth": {
+    "title": "Sign in to Mastera",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "signingIn": "Signing in…",
+    "invalidCredentials": "Wrong email or password.",
+    "lockedOut": "Too many attempts. Try again in 15 minutes.",
+    "required": "Fill in this field.",
+    "emailInvalid": "Enter a valid email address.",
+    "signOut": "Sign out",
+    "genericError": "Something went wrong. Try again."
+  },
+  "nav": {
+    "label": "Main menu",
+    "calendar": "Calendar",
+    "bookings": "Bookings",
+    "masters": "Masters",
+    "services": "Services",
+    "settings": "Settings"
+  },
+  "salon": {
+    "label": "Salon",
+    "none": "You don't work in any salon yet."
+  },
+  "roles": {
+    "Owner": "Owner",
+    "Admin": "Admin",
+    "Receptionist": "Receptionist",
+    "Master": "Master"
+  },
+  "masters": {
+    "empty": "No masters yet."
+  },
+  "pages": {
+    "comingSoon": "This section is coming soon."
   }
 }
