@@ -1,0 +1,13 @@
+{
+  "common": { "appName": "Mastera" },
+  "language": { "label": "Language", "ka": "ქართული", "ru": "Русский", "en": "English" },
+  "dashboard": {
+    "title": "Salon dashboard",
+    "welcome": "Bookings, masters and schedules in one place."
+  },
+  "booking": {
+    "title": "Book an appointment",
+    "intro": "Pick a service, a master and a time that suits you.",
+    "cta": "Choose a time"
+  }
+}

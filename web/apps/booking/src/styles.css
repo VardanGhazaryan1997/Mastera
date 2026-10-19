@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+@source '../../../packages/ui/src';
+
+:root {
+  font-family: 'Noto Sans Georgian', 'Noto Sans', system-ui, sans-serif;
+}
