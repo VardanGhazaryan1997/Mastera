@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore
+        run: dotnet restore Mastera.slnx
+      - name: Build
+        run: dotnet build Mastera.slnx --no-restore -c Release
+      # Unit, architecture, functional and integration tests.
+      # Integration tests use Testcontainers; Docker is available on ubuntu-latest runners.
+      - name: Test
+        run: dotnet test Mastera.slnx --no-build -c Release --logger "trx" --results-directory TestResults
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dotnet-test-results
+          path: TestResults
+
+  frontend:
+    name: Frontend (React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: End-to-end tests
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm e2e
+
+  licenses:
+    name: License guard (free licenses only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: npm packages
+        working-directory: web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm test:build
+          pnpm check:licenses
+      - name: NuGet packages
+        run: |
+          dotnet tool install --global nuget-license
+          dotnet restore Mastera.slnx
+          nuget-license -ji build/nuget-projects.json -t -a build/nuget-allowed-licenses.json

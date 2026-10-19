@@ -1,0 +1,6 @@
+[
+  "src/Mastera.Domain/Mastera.Domain.csproj",
+  "src/Mastera.Application/Mastera.Application.csproj",
+  "src/Mastera.Infrastructure/Mastera.Infrastructure.csproj",
+  "src/Mastera.Api/Mastera.Api.csproj"
+]

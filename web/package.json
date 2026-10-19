@@ -14,7 +14,8 @@
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
     "e2e": "playwright test",
-    "licenses": "node ../build/check-npm-licenses.mjs"
+    "check:licenses": "node ../build/check-npm-licenses.mjs",
+    "test:build": "node --test ../build/*.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
