@@ -12,8 +12,7 @@ public sealed class PostgresFixture : IAsyncLifetime
 {
     public const string Image = "postgres:17-alpine";
 
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
-        .WithImage(Image)
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder(Image)
         .WithDatabase("mastera_tests")
         .Build();
 

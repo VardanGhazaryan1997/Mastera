@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Mastera.Infrastructure.IntegrationTests;
 
 [Collection(PostgresCollection.Name)]
+[Trait("Category", "Integration")]
 public sealed class DatabaseConnectivityTests(PostgresFixture db)
 {
     [Fact]
