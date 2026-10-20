@@ -3,7 +3,7 @@ using Mastera.Application.Tenancy;
 namespace Mastera.Api.Tenancy;
 
 /// <summary>Per-request tenant context, filled in once by <see cref="TenantResolutionMiddleware"/>.</summary>
-public sealed class HttpTenantContext : ITenantContext
+public sealed class HttpTenantContext : ITenantContext, ITenantSwitcher
 {
     public CurrentTenant? Current { get; private set; }
 
@@ -18,4 +18,6 @@ public sealed class HttpTenantContext : ITenantContext
 
         Current = tenant;
     }
+
+    void ITenantSwitcher.Use(CurrentTenant tenant) => Set(tenant);
 }

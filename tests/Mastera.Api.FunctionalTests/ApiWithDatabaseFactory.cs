@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Net.Http.Json;
+using Mastera.Application.Email;
 using Mastera.Domain.Memberships;
 using Mastera.Domain.Tenants;
 using Mastera.Infrastructure.Identity;
@@ -5,8 +8,10 @@ using Mastera.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NodaTime;
 using Testcontainers.PostgreSql;
 
@@ -25,6 +30,9 @@ public sealed class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAs
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17-alpine").Build();
 
     public TenantId SeededTenantId { get; private set; }
+
+    /// <summary>Every email the API sent, instead of going to an SMTP server.</summary>
+    public FakeEmailSender Emails { get; } = new();
 
     public const string Password = "secret123";
 
@@ -78,6 +86,24 @@ public sealed class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAs
         return email;
     }
 
+    /// <summary>Signs up a brand-new salon and returns a client signed in as its owner, working in that salon.</summary>
+    public async Task<(HttpClient Client, string Slug)> SignUpSalonAsync()
+    {
+        var slug = $"salon-{Guid.NewGuid():N}"[..20];
+        var client = CreatePlatformClient();
+        var response = await client.PostAsJsonAsync("/api/signup", new
+        {
+            salonName = "Test Salon",
+            slug,
+            ownerName = "Salon Owner",
+            email = $"owner-{Guid.NewGuid():N}@example.ge",
+            password = Password,
+        });
+        response.EnsureSuccessStatusCode();
+        client.DefaultRequestHeaders.Add("X-Mastera-Tenant", slug);
+        return (client, slug);
+    }
+
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
@@ -89,5 +115,27 @@ public sealed class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAs
         builder.UseEnvironment("Development");
         builder.UseSetting("ConnectionStrings:Mastera", _container.GetConnectionString());
         builder.UseSetting("Tenancy:RootDomain", RootDomain);
+        builder.UseSetting("App:DashboardUrl", "http://dashboard.test");
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender>(Emails);
+        });
     }
+}
+
+public sealed class FakeEmailSender : IEmailSender
+{
+    private readonly ConcurrentQueue<EmailMessage> _sent = new();
+
+    public IReadOnlyCollection<EmailMessage> Sent => _sent.ToArray();
+
+    public Task SendAsync(EmailMessage message, CancellationToken cancellationToken)
+    {
+        _sent.Enqueue(message);
+        return Task.CompletedTask;
+    }
+
+    public EmailMessage LastTo(string email) =>
+        _sent.Last(m => string.Equals(m.To, email, StringComparison.OrdinalIgnoreCase));
 }

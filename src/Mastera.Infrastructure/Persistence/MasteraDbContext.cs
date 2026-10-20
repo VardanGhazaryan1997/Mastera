@@ -1,6 +1,10 @@
 using System.Reflection;
 using Mastera.Application.Tenancy;
+using Mastera.Domain.Catalog;
+using Mastera.Domain.Invitations;
+using Mastera.Domain.Masters;
 using Mastera.Domain.Memberships;
+using Mastera.Domain.Schedules;
 using Mastera.Domain.Tenants;
 using Mastera.Infrastructure.Identity;
 using Mastera.Infrastructure.Persistence.Converters;
@@ -36,6 +40,16 @@ public class MasteraDbContext : IdentityUserContext<ApplicationUser, Guid>
 
     public DbSet<Membership> Memberships => Set<Membership>();
 
+    public DbSet<Invitation> Invitations => Set<Invitation>();
+
+    public DbSet<ServiceCategory> ServiceCategories => Set<ServiceCategory>();
+
+    public DbSet<Service> Services => Set<Service>();
+
+    public DbSet<Master> Masters => Set<Master>();
+
+    public DbSet<MasterSchedule> MasterSchedules => Set<MasterSchedule>();
+
     /// <summary>
     /// The tenant every query is filtered by and every write is stamped with.
     /// Read by EF Core each time a query runs, and by the connection interceptor for row-level security.
@@ -48,6 +62,11 @@ public class MasteraDbContext : IdentityUserContext<ApplicationUser, Guid>
         base.ConfigureConventions(configurationBuilder);
         configurationBuilder.Properties<TenantId>().HaveConversion<TenantIdConverter>();
         configurationBuilder.Properties<MembershipId>().HaveConversion<MembershipIdConverter>();
+        configurationBuilder.Properties<InvitationId>().HaveConversion<InvitationIdConverter>();
+        configurationBuilder.Properties<ServiceCategoryId>().HaveConversion<ServiceCategoryIdConverter>();
+        configurationBuilder.Properties<ServiceId>().HaveConversion<ServiceIdConverter>();
+        configurationBuilder.Properties<MasterId>().HaveConversion<MasterIdConverter>();
+        configurationBuilder.Properties<ScheduleExceptionId>().HaveConversion<ScheduleExceptionIdConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

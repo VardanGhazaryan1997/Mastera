@@ -51,6 +51,117 @@ export interface Member {
   role: Role;
 }
 
+export interface ServiceCategory {
+  id: string;
+  name: string;
+  sortOrder: number;
+}
+
+export interface Service {
+  id: string;
+  categoryId: string | null;
+  name: string;
+  description: string | null;
+  durationMinutes: number;
+  price: number;
+  isArchived: boolean;
+}
+
+export interface ServiceInput {
+  name: string;
+  durationMinutes: number;
+  price: number;
+  categoryId?: string | null;
+  description?: string | null;
+}
+
+/** A service a master offers; null price/duration means the service's own. */
+export interface MasterServiceOffer {
+  serviceId: string;
+  price: number | null;
+  durationMinutes: number | null;
+}
+
+export interface Master {
+  id: string;
+  displayName: string;
+  bio: string | null;
+  isActive: boolean;
+  userId: string | null;
+  services: MasterServiceOffer[];
+}
+
+export interface MasterInput {
+  displayName: string;
+  bio?: string | null;
+  isActive?: boolean;
+}
+
+export type InvitableRole = Exclude<Role, 'Owner'>;
+
+export interface InvitationDetails {
+  salonName: string;
+  salonSlug: string;
+  email: string;
+  role: Role;
+  expired: boolean;
+  accepted: boolean;
+  hasAccount: boolean;
+}
+
+export type Weekday = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+
+export const WEEKDAYS: readonly Weekday[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+/** Times are "HH:mm" in the salon's time zone. */
+export interface TimeRange {
+  start: string;
+  end: string;
+}
+
+export interface DaySchedule extends TimeRange {
+  breaks?: TimeRange[];
+}
+
+export type WorkPattern =
+  | { kind: 'weekly'; days: Partial<Record<Weekday, DaySchedule>> }
+  | { kind: 'rotating'; anchor: string; cycle: (DaySchedule | null)[] };
+
+export interface ScheduleException {
+  id: string;
+  from: string;
+  to: string;
+  /** null = day off. */
+  hours: DaySchedule | null;
+  note: string | null;
+}
+
+export interface Schedule {
+  masterId: string;
+  pattern: WorkPattern | null;
+  exceptions: ScheduleException[];
+}
+
+export interface ScheduleExceptionInput {
+  from: string;
+  to?: string | null;
+  hours?: DaySchedule | null;
+  note?: string | null;
+}
+
+export interface AvailableSlot {
+  time: string;
+  start: string;
+  masters: { masterId: string; masterName: string; price: number; durationMinutes: number; end: string }[];
+}
+
+export interface Availability {
+  date: string;
+  timeZone: string;
+  serviceId: string;
+  slots: AvailableSlot[];
+}
+
 export const TENANT_HEADER = 'X-Mastera-Tenant';
 
 export interface ApiClientOptions {
@@ -65,9 +176,10 @@ export interface ApiClientOptions {
  * handles tokens. Endpoints will be generated from the API's OpenAPI document (orval) as the API grows.
  */
 export function createApiClient({ baseUrl, fetch: fetchImpl = fetch, getTenant }: ApiClientOptions) {
-  const request = async (path: string, init: RequestInit = {}): Promise<Response> => {
+  /** withTenant: false for calls that are not about the active salon (e.g. accepting an invitation to another one). */
+  const request = async (path: string, init: RequestInit = {}, withTenant = true): Promise<Response> => {
     const headers = new Headers(init.headers);
-    const tenant = getTenant?.();
+    const tenant = withTenant ? getTenant?.() : null;
     if (tenant) headers.set(TENANT_HEADER, tenant);
 
     const response = await fetchImpl(`${baseUrl}${path}`, { credentials: 'include', ...init, headers });
@@ -79,12 +191,18 @@ export function createApiClient({ baseUrl, fetch: fetchImpl = fetch, getTenant }
     return response;
   };
 
-  const sendJson = (method: string, path: string, body?: unknown) =>
-    request(path, {
-      method,
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
+  const sendJson = (method: string, path: string, body?: unknown, withTenant = true) =>
+    request(
+      path,
+      {
+        method,
+        headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      },
+      withTenant,
+    );
+
+  const json = async <T>(response: Promise<Response>): Promise<T> => (await (await response).json()) as T;
 
   return {
     async getHealth(): Promise<HealthStatus> {
@@ -112,6 +230,48 @@ export function createApiClient({ baseUrl, fetch: fetchImpl = fetch, getTenant }
     /** People working in the active salon (owners and admins only). */
     async listMembers(): Promise<Member[]> {
       return (await (await request('/api/members')).json()) as Member[];
+    },
+
+    listCategories: () => json<ServiceCategory[]>(request('/api/service-categories')),
+    createCategory: (name: string, sortOrder = 0) =>
+      json<ServiceCategory>(sendJson('POST', '/api/service-categories', { name, sortOrder })),
+
+    listServices: (includeArchived = false) =>
+      json<Service[]>(request(`/api/services${includeArchived ? '?includeArchived=true' : ''}`)),
+    createService: (input: ServiceInput) => json<Service>(sendJson('POST', '/api/services', input)),
+    updateService: (id: string, input: ServiceInput) => json<Service>(sendJson('PUT', `/api/services/${id}`, input)),
+    archiveService: (id: string) => json<Service>(sendJson('POST', `/api/services/${id}/archive`)),
+    restoreService: (id: string) => json<Service>(sendJson('POST', `/api/services/${id}/restore`)),
+
+    listMasters: () => json<Master[]>(request('/api/masters')),
+    createMaster: (input: MasterInput) => json<Master>(sendJson('POST', '/api/masters', input)),
+    updateMaster: (id: string, input: MasterInput) => json<Master>(sendJson('PUT', `/api/masters/${id}`, input)),
+    setMasterServices: (id: string, services: MasterServiceOffer[]) =>
+      json<Master>(sendJson('PUT', `/api/masters/${id}/services`, { services })),
+
+    getMyMaster: () => json<Master>(request('/api/masters/me')),
+    getSchedule: (masterId: string) => json<Schedule>(request(`/api/masters/${masterId}/schedule`)),
+    setPattern: (masterId: string, pattern: WorkPattern | null) =>
+      json<Schedule>(sendJson('PUT', `/api/masters/${masterId}/schedule/pattern`, { pattern })),
+    addScheduleException: (masterId: string, input: ScheduleExceptionInput) =>
+      json<ScheduleException>(sendJson('POST', `/api/masters/${masterId}/schedule/exceptions`, input)),
+    async removeScheduleException(masterId: string, exceptionId: string): Promise<void> {
+      await sendJson('DELETE', `/api/masters/${masterId}/schedule/exceptions/${exceptionId}`);
+    },
+
+    getAvailability: (serviceId: string, date: string, masterId?: string | null) => {
+      const query = new URLSearchParams({ serviceId, date });
+      if (masterId) query.set('masterId', masterId);
+      return json<Availability>(request(`/api/availability?${query.toString()}`));
+    },
+
+    async invite(input: { email: string; role: InvitableRole; masterId?: string | null }): Promise<void> {
+      await sendJson('POST', '/api/invitations', input);
+    },
+    getInvitation: (token: string) =>
+      json<InvitationDetails>(request(`/api/invitations/${encodeURIComponent(token)}`, {}, false)),
+    async acceptInvitation(input: { token: string; displayName?: string; password?: string }): Promise<void> {
+      await sendJson('POST', '/api/invitations/accept', input, false);
     },
   };
 }

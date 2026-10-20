@@ -7,4 +7,6 @@ public interface IUserAccounts
 {
     /// <summary>Creates an account and returns its user id, or a validation/conflict error.</summary>
     Task<Result<Guid>> CreateAsync(string email, string password, string displayName, CancellationToken cancellationToken);
+
+    Task<Guid?> FindIdByEmailAsync(string email, CancellationToken cancellationToken);
 }

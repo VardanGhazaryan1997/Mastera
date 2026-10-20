@@ -12,7 +12,8 @@ interface FieldErrors {
   password?: string;
 }
 
-export function LoginPage({ api }: { api: ApiClient }) {
+/** The sign-in form on its own, e.g. inside the invitation page. */
+export function LoginForm({ api, headingLevel = 1 }: { api: ApiClient; headingLevel?: 1 | 2 }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
@@ -41,15 +42,11 @@ export function LoginPage({ api }: { api: ApiClient }) {
     return t('auth.genericError');
   })();
 
+  const Heading = headingLevel === 1 ? 'h1' : 'h2';
+
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 bg-white px-4 py-3 sm:px-6">
-        <span className="text-lg font-semibold tracking-tight">{t('common.appName')}</span>
-        <LanguageSwitcher />
-      </header>
-      <main className="mx-auto max-w-sm px-4 py-16">
         <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-6">
-          <h1 className="text-2xl font-semibold">{t('auth.title')}</h1>
+          <Heading className="text-2xl font-semibold">{t('auth.title')}</Heading>
           <TextField
             id="login-email"
             label={t('auth.email')}
@@ -77,6 +74,19 @@ export function LoginPage({ api }: { api: ApiClient }) {
             {login.isPending ? t('auth.signingIn') : t('auth.submit')}
           </Button>
         </form>
+  );
+}
+
+export function LoginPage({ api }: { api: ApiClient }) {
+  const { t } = useTranslation();
+  return (
+    <div className="min-h-screen bg-neutral-50 text-neutral-900">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 bg-white px-4 py-3 sm:px-6">
+        <span className="text-lg font-semibold tracking-tight">{t('common.appName')}</span>
+        <LanguageSwitcher />
+      </header>
+      <main className="mx-auto max-w-sm px-4 py-16">
+        <LoginForm api={api} />
       </main>
     </div>
   );

@@ -1,8 +1,16 @@
 using Mastera.Api.Auth;
+using Mastera.Api.Availability;
+using Mastera.Api.Catalog;
+using Mastera.Api.Invitations;
+using Mastera.Api.Masters;
+using Mastera.Api.Schedules;
 using Mastera.Api.Salons;
 using Mastera.Api.Tenancy;
 using Mastera.Application;
+using Mastera.Application.Users;
 using Mastera.Infrastructure;
+using Mastera.Infrastructure.Email;
+using System.Text.Json.Serialization;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,13 +22,19 @@ builder.Services.AddSerilog((services, logger) => logger
     .WriteTo.Console());
 
 builder.Services.AddProblemDetails();
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 
 builder.Services.AddTenancy(builder.Configuration);
 builder.Services.AddMasteraAuth(builder.Environment);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
+builder.Services.Configure<AppLinkOptions>(builder.Configuration.GetSection(AppLinkOptions.SectionName));
 
 var app = builder.Build();
 
@@ -44,6 +58,11 @@ app.MapHealthChecks("/health");
 app.MapTenantEndpoints();
 app.MapAuthEndpoints();
 app.MapSalonEndpoints();
+app.MapCatalogEndpoints();
+app.MapMasterEndpoints();
+app.MapInvitationEndpoints();
+app.MapScheduleEndpoints();
+app.MapAvailabilityEndpoints();
 
 app.Run();
 

@@ -1,8 +1,15 @@
+using Mastera.Application.Availability;
+using Mastera.Application.Catalog;
 using Mastera.Application.Common;
+using Mastera.Application.Email;
+using Mastera.Application.Invitations;
+using Mastera.Application.Masters;
 using Mastera.Application.Memberships;
 using Mastera.Application.Salons;
+using Mastera.Application.Schedules;
 using Mastera.Application.Tenancy;
 using Mastera.Application.Users;
+using Mastera.Infrastructure.Email;
 using Mastera.Infrastructure.Identity;
 using Mastera.Infrastructure.Persistence;
 using Mastera.Infrastructure.Repositories;
@@ -37,6 +44,17 @@ public static class DependencyInjection
         services.AddScoped<IMembershipRepository, MembershipRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserAccounts, UserAccounts>();
+        services.AddScoped<ITenantLookupById, TenantLookup>();
+        services.AddScoped<ICatalogRepository, CatalogRepository>();
+        services.AddScoped<IMasterRepository, MasterRepository>();
+        services.AddScoped<IInvitationRepository, InvitationRepository>();
+        services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<ITenantSettings, TenantLookup>();
+        services.AddSingleton<IBusyTimeSource, EmptyBusyTimeSource>();
+
+        // EmailOptions and AppLinkOptions are bound to configuration by the host (see Program.cs).
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<IInvitationLinks, InvitationLinks>();
 
         return services;
     }

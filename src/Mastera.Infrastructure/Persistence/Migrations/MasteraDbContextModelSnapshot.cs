@@ -23,6 +23,178 @@ namespace Mastera.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Mastera.Domain.Catalog.Service", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Duration>("Duration")
+                        .HasColumnType("interval");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Services", (string)null);
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Catalog.ServiceCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("ServiceCategories", (string)null);
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Invitations.Invitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Instant?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("AcceptedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Instant>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("MasterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("Invitations", (string)null);
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Masters.Master", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Masters", (string)null);
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Masters.MasterService", b =>
+                {
+                    b.Property<Guid>("MasterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Duration?>("DurationOverride")
+                        .HasColumnType("interval");
+
+                    b.Property<decimal?>("PriceOverride")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("MasterId", "ServiceId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("MasterServices", (string)null);
+                });
+
             modelBuilder.Entity("Mastera.Domain.Memberships.Membership", b =>
                 {
                     b.Property<Guid>("Id")
@@ -50,6 +222,57 @@ namespace Mastera.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Memberships", (string)null);
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Schedules.MasterSchedule", b =>
+                {
+                    b.Property<Guid>("MasterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Pattern")
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("MasterId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("MasterSchedules", (string)null);
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Schedules.ScheduleException", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDate>("From")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Hours")
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("MasterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDate>("To")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("MasterId", "From");
+
+                    b.ToTable("ScheduleExceptions", (string)null);
                 });
 
             modelBuilder.Entity("Mastera.Domain.Tenants.Tenant", b =>
@@ -230,6 +453,38 @@ namespace Mastera.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Mastera.Domain.Catalog.Service", b =>
+                {
+                    b.HasOne("Mastera.Domain.Catalog.ServiceCategory", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Invitations.Invitation", b =>
+                {
+                    b.HasOne("Mastera.Domain.Tenants.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Masters.MasterService", b =>
+                {
+                    b.HasOne("Mastera.Domain.Masters.Master", null)
+                        .WithMany("Services")
+                        .HasForeignKey("MasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mastera.Domain.Catalog.Service", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Mastera.Domain.Memberships.Membership", b =>
                 {
                     b.HasOne("Mastera.Domain.Tenants.Tenant", null)
@@ -241,6 +496,24 @@ namespace Mastera.Infrastructure.Persistence.Migrations
                     b.HasOne("Mastera.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Schedules.MasterSchedule", b =>
+                {
+                    b.HasOne("Mastera.Domain.Masters.Master", null)
+                        .WithOne()
+                        .HasForeignKey("Mastera.Domain.Schedules.MasterSchedule", "MasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Schedules.ScheduleException", b =>
+                {
+                    b.HasOne("Mastera.Domain.Schedules.MasterSchedule", null)
+                        .WithMany("Exceptions")
+                        .HasForeignKey("MasterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -270,6 +543,16 @@ namespace Mastera.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Masters.Master", b =>
+                {
+                    b.Navigation("Services");
+                });
+
+            modelBuilder.Entity("Mastera.Domain.Schedules.MasterSchedule", b =>
+                {
+                    b.Navigation("Exceptions");
                 });
 #pragma warning restore 612, 618
         }

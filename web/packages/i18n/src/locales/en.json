@@ -1,7 +1,17 @@
 {
   "common": {
     "appName": "Mastera",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "archive": "Archive",
+    "restore": "Restore",
+    "none": "None",
+    "minutes": "{{count}} min",
+    "active": "Active",
+    "inactive": "Inactive",
+    "saved": "Saved."
   },
   "language": {
     "label": "Language",
@@ -37,7 +47,8 @@
     "bookings": "Bookings",
     "masters": "Masters",
     "services": "Services",
-    "settings": "Settings"
+    "settings": "Settings",
+    "schedule": "My schedule"
   },
   "salon": {
     "label": "Salon",
@@ -50,9 +61,127 @@
     "Master": "Master"
   },
   "masters": {
-    "empty": "No masters yet."
+    "empty": "No masters yet.",
+    "new": "New master",
+    "add": "Add master",
+    "select": "Choose a master to edit their profile and services.",
+    "name": "Name",
+    "bio": "About",
+    "active": "Takes bookings",
+    "saveProfile": "Save profile",
+    "services": "Services",
+    "ownPrice": "Own price for {{name}}",
+    "ownDuration": "Own duration for {{name}}",
+    "defaultHint": "Leave empty to use {{price}} / {{minutes}} min",
+    "saveServices": "Save services",
+    "linked": "Has an account",
+    "notLinked": "No account yet",
+    "nameError": "Use 2–60 characters.",
+    "noServices": "Add services first, on the Services page."
   },
   "pages": {
     "comingSoon": "This section is coming soon."
+  },
+  "services": {
+    "title": "Services",
+    "add": "Add service",
+    "edit": "Edit service",
+    "name": "Name",
+    "category": "Category",
+    "duration": "Duration (minutes)",
+    "price": "Price",
+    "description": "Description",
+    "showArchived": "Show archived",
+    "empty": "No services yet. Add the first one.",
+    "archived": "Archived",
+    "archiveLabel": "Archive {{name}}",
+    "restoreLabel": "Restore {{name}}",
+    "editLabel": "Edit {{name}}",
+    "errors": {
+      "name": "Use 2–100 characters.",
+      "duration": "Use 5–480 minutes, in steps of 5.",
+      "price": "Enter a price from 0 to 100000.",
+      "taken": "A service with this name already exists."
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "new": "New category",
+    "add": "Add category",
+    "empty": "No categories yet.",
+    "taken": "A category with this name already exists.",
+    "name": "Use 2–60 characters."
+  },
+  "invite": {
+    "email": "Invite by email",
+    "role": "Role",
+    "send": "Send invitation",
+    "sent": "Invitation sent to {{email}}.",
+    "masterHint": "They get an email with a link to create their account and see their calendar.",
+    "title": "Join {{salon}}",
+    "as": "{{email}} is invited to work here as {{role}}.",
+    "yourName": "Your name",
+    "password": "Password",
+    "passwordHint": "At least 8 characters, including a digit.",
+    "accept": "Accept invitation",
+    "signInFirst": "Sign in as {{email}} to accept.",
+    "expired": "This invitation has expired. Ask the salon for a new one.",
+    "used": "This invitation has already been used.",
+    "notFound": "This invitation link is not valid.",
+    "mismatch": "This invitation is for {{email}}. Sign out and sign in with that email.",
+    "nameError": "Use 2–100 characters."
+  },
+  "team": {
+    "title": "Team",
+    "empty": "Nobody else works here yet."
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again."
+  },
+  "weekdays": {
+    "Monday": "Monday",
+    "Tuesday": "Tuesday",
+    "Wednesday": "Wednesday",
+    "Thursday": "Thursday",
+    "Friday": "Friday",
+    "Saturday": "Saturday",
+    "Sunday": "Sunday"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "regular": "Regular hours",
+    "weekly": "Same every week",
+    "shifts": "Shifts (days on / days off)",
+    "startLabel": "{{day}} from",
+    "endLabel": "{{day}} to",
+    "breakStartLabel": "{{day}} break from",
+    "breakEndLabel": "{{day}} break to",
+    "savePattern": "Save regular hours",
+    "firstDay": "First working day",
+    "daysOn": "Days on",
+    "daysOff": "Days off",
+    "shiftStart": "Shift from",
+    "shiftEnd": "Shift to",
+    "notSet": "Regular hours aren't set yet, so nobody can book this master.",
+    "shiftSummary": "{{on}} days on, {{off}} days off, from {{anchor}}: {{hours}}",
+    "exceptions": "Days off and changes",
+    "noExceptions": "No days off planned.",
+    "add": "Add",
+    "exceptionFrom": "First day",
+    "exceptionTo": "Last day (optional)",
+    "differentHours": "Working, with different hours",
+    "from": "From",
+    "to": "To",
+    "note": "Note",
+    "dayOff": "Day off",
+    "remove": "Remove {{dates}}",
+    "removeShort": "Remove",
+    "noProfile": "You don't have a master profile in this salon yet. Ask the salon to link your account.",
+    "errors": {
+      "overlap": "These dates overlap another day off or change.",
+      "time": "Check the times: the end must be after the start, and breaks inside working hours.",
+      "date": "Choose the first day.",
+      "cycle": "Shifts need at least 1 day on and 1 day off, 28 days at most."
+    }
   }
 }

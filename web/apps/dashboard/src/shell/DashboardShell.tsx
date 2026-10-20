@@ -5,6 +5,9 @@ import { useTranslation } from '@mastera/i18n';
 import { Button, Select } from '@mastera/ui';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { MastersPage } from '../masters/MastersPage';
+import { MySchedulePage } from '../schedule/MySchedulePage';
+import { ServicesPage } from '../services/ServicesPage';
+import { SettingsPage } from '../settings/SettingsPage';
 import type { TenantStore } from '../tenant/tenantStore';
 import { pagesFor, type PageKey } from './navigation';
 
@@ -39,7 +42,7 @@ export function DashboardShell({ api, me, tenantStore }: Props) {
   const logout = useMutation({
     mutationFn: () => api.logout(),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ['members'] });
+      for (const key of ['members', 'masters', 'services', 'categories', 'schedule', 'my-master']) queryClient.removeQueries({ queryKey: [key] });
       return queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
@@ -99,6 +102,12 @@ export function DashboardShell({ api, me, tenantStore }: Props) {
             <h1 className="mb-4 text-2xl font-semibold">{t(`nav.${activePage}`)}</h1>
             {activePage === 'masters' ? (
               <MastersPage api={api} salon={membership.slug} />
+            ) : activePage === 'schedule' ? (
+              <MySchedulePage api={api} salon={membership.slug} />
+            ) : activePage === 'services' ? (
+              <ServicesPage api={api} salon={membership.slug} />
+            ) : activePage === 'settings' ? (
+              <SettingsPage api={api} salon={membership.slug} />
             ) : (
               <p className="text-neutral-600">{t('pages.comingSoon')}</p>
             )}

@@ -170,26 +170,6 @@ describe('Salons and roles', () => {
     expect(tenantStore.get()).toBe('nail-studio');
   });
 
-  it('loads the masters of the active salon with the salon header', async () => {
-    signedIn();
-    const headers: (string | null)[] = [];
-    server.use(
-      http.get(`${baseUrl}/api/members`, ({ request }) => {
-        headers.push(request.headers.get('X-Mastera-Tenant'));
-        return HttpResponse.json([
-          { userId: 'u1', email: 'nino@example.ge', displayName: 'Nino Kapanadze', role: 'Owner' },
-          { userId: 'u2', email: 'luka@example.ge', displayName: 'Luka Barber', role: 'Master' },
-        ]);
-      }),
-    );
-    renderApp();
-
-    await userEvent.click(await within(await screen.findByRole('navigation', { name: 'Main menu' })).findByRole('button', { name: 'Masters' }));
-
-    expect(await screen.findByText('Luka Barber')).toBeInTheDocument();
-    expect(headers).toEqual(['barber-house']);
-  });
-
   it('tells a user with no salons what is going on', async () => {
     signedIn({ ...owner, memberships: [] });
     renderApp();

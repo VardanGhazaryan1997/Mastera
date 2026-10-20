@@ -32,4 +32,4 @@ export function createI18n(language: string = defaultLanguage): i18n {
 }
 
 export { I18nextProvider, useTranslation } from 'react-i18next';
-export type { i18n } from 'i18next';
+export type { i18n, TFunction } from 'i18next';

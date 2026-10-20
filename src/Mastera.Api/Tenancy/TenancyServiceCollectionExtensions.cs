@@ -12,6 +12,7 @@ public static class TenancyServiceCollectionExtensions
         services.Configure<TenancyOptions>(configuration.GetSection(TenancyOptions.SectionName));
         services.AddScoped<HttpTenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<HttpTenantContext>());
+        services.AddScoped<ITenantSwitcher>(sp => sp.GetRequiredService<HttpTenantContext>());
 
         return services;
     }

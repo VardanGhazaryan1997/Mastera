@@ -1,6 +1,6 @@
 import type { Role } from '@mastera/api-client';
 
-export type PageKey = 'calendar' | 'bookings' | 'masters' | 'services' | 'settings';
+export type PageKey = 'calendar' | 'bookings' | 'schedule' | 'masters' | 'services' | 'settings';
 
 const everyone: readonly Role[] = ['Owner', 'Admin', 'Receptionist', 'Master'];
 const managers: readonly Role[] = ['Owner', 'Admin'];
@@ -9,6 +9,7 @@ const managers: readonly Role[] = ['Owner', 'Admin'];
 export const pages: readonly { key: PageKey; roles: readonly Role[] }[] = [
   { key: 'calendar', roles: everyone },
   { key: 'bookings', roles: everyone },
+  { key: 'schedule', roles: ['Master'] },
   { key: 'masters', roles: managers },
   { key: 'services', roles: managers },
   { key: 'settings', roles: managers },

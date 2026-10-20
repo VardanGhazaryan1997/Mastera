@@ -44,4 +44,10 @@ public sealed class UserAccounts(UserManager<ApplicationUser> userManager, ICloc
 
         return Result.Failure<Guid>(Error.Validation("auth.user.invalid", details));
     }
+
+    public async Task<Guid?> FindIdByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByEmailAsync((email ?? string.Empty).Trim());
+        return user?.Id;
+    }
 }
