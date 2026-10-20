@@ -16,4 +16,7 @@ public static class Policies
 
     /// <summary>Owner or Admin of the current salon.</summary>
     public const string SalonAdmin = "SalonAdmin";
+
+    /// <summary>Front desk: Owner, Admin or Receptionist (manage every master's bookings).</summary>
+    public const string SalonDesk = "SalonDesk";
 }

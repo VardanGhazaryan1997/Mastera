@@ -1,5 +1,7 @@
 using Mastera.Api.Auth;
 using Mastera.Api.Availability;
+using Mastera.Api.Bookings;
+using Mastera.Api.Common;
 using Mastera.Api.Catalog;
 using Mastera.Api.Invitations;
 using Mastera.Api.Masters;
@@ -11,6 +13,7 @@ using Mastera.Application.Users;
 using Mastera.Infrastructure;
 using Mastera.Infrastructure.Email;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +33,21 @@ builder.Services.AddHealthChecks();
 builder.Services.AddTenancy(builder.Configuration);
 builder.Services.AddMasteraAuth(builder.Environment);
 builder.Services.AddHttpContextAccessor();
+
+// Public booking endpoints are anonymous, so limit how often one address can call them (spam, bots).
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(BookingEndpoints.PublicRateLimit, context =>
+    {
+        var limit = context.RequestServices.GetRequiredService<IConfiguration>().GetValue("RateLimits:PublicBookingPerMinute", 20);
+        return RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 });
+    });
+    options.OnRejected = (context, _) => new ValueTask(
+        ProblemResults.Problem(StatusCodes.Status429TooManyRequests, "Too many requests. Try again in a minute.", "rate_limited")
+            .ExecuteAsync(context.HttpContext));
+});
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
@@ -47,6 +65,7 @@ app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
@@ -63,6 +82,7 @@ app.MapMasterEndpoints();
 app.MapInvitationEndpoints();
 app.MapScheduleEndpoints();
 app.MapAvailabilityEndpoints();
+app.MapBookingEndpoints();
 
 app.Run();
 

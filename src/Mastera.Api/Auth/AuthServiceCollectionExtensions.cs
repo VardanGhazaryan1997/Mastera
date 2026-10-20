@@ -70,7 +70,11 @@ public static class AuthServiceCollectionExtensions
             .AddPolicy(Policies.SalonAdmin, policy => policy
                 .RequireAuthenticatedUser()
                 .RequireClaim(MasteraClaims.TenantId)
-                .RequireRole(nameof(MembershipRole.Owner), nameof(MembershipRole.Admin)));
+                .RequireRole(nameof(MembershipRole.Owner), nameof(MembershipRole.Admin)))
+            .AddPolicy(Policies.SalonDesk, policy => policy
+                .RequireAuthenticatedUser()
+                .RequireClaim(MasteraClaims.TenantId)
+                .RequireRole(nameof(MembershipRole.Owner), nameof(MembershipRole.Admin), nameof(MembershipRole.Receptionist)));
 
         return services;
     }

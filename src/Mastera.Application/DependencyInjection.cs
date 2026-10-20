@@ -1,4 +1,5 @@
 using Mastera.Application.Availability;
+using Mastera.Application.Bookings;
 using Mastera.Application.Catalog;
 using Mastera.Application.Invitations;
 using Mastera.Application.Masters;
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<InvitationHandler>();
         services.AddScoped<ScheduleHandler>();
         services.AddScoped<AvailabilityQuery>();
+        services.AddScoped<BookingHandler>();
 
         return services;
     }

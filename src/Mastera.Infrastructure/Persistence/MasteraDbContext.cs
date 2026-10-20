@@ -1,6 +1,8 @@
 using System.Reflection;
 using Mastera.Application.Tenancy;
+using Mastera.Domain.Bookings;
 using Mastera.Domain.Catalog;
+using Mastera.Domain.Clients;
 using Mastera.Domain.Invitations;
 using Mastera.Domain.Masters;
 using Mastera.Domain.Memberships;
@@ -50,6 +52,14 @@ public class MasteraDbContext : IdentityUserContext<ApplicationUser, Guid>
 
     public DbSet<MasterSchedule> MasterSchedules => Set<MasterSchedule>();
 
+    public DbSet<Client> Clients => Set<Client>();
+
+    public DbSet<Booking> Bookings => Set<Booking>();
+
+    public DbSet<SlotHold> SlotHolds => Set<SlotHold>();
+
+    public DbSet<BlockedTime> BlockedTimes => Set<BlockedTime>();
+
     /// <summary>
     /// The tenant every query is filtered by and every write is stamped with.
     /// Read by EF Core each time a query runs, and by the connection interceptor for row-level security.
@@ -67,6 +77,10 @@ public class MasteraDbContext : IdentityUserContext<ApplicationUser, Guid>
         configurationBuilder.Properties<ServiceId>().HaveConversion<ServiceIdConverter>();
         configurationBuilder.Properties<MasterId>().HaveConversion<MasterIdConverter>();
         configurationBuilder.Properties<ScheduleExceptionId>().HaveConversion<ScheduleExceptionIdConverter>();
+        configurationBuilder.Properties<ClientId>().HaveConversion<ClientIdConverter>();
+        configurationBuilder.Properties<BookingId>().HaveConversion<BookingIdConverter>();
+        configurationBuilder.Properties<SlotHoldId>().HaveConversion<SlotHoldIdConverter>();
+        configurationBuilder.Properties<BlockedTimeId>().HaveConversion<BlockedTimeIdConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -75,6 +89,9 @@ public class MasteraDbContext : IdentityUserContext<ApplicationUser, Guid>
 
         // Identity tables (users, claims, logins, tokens). Roles are per salon, see Membership.
         base.OnModelCreating(modelBuilder);
+
+        // Needed by the booking overlap constraints (see BookingConstraints).
+        modelBuilder.HasPostgresExtension("btree_gist");
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MasteraDbContext).Assembly);
 

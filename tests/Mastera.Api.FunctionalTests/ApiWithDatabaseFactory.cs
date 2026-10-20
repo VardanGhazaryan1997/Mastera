@@ -21,7 +21,7 @@ namespace Mastera.Api.FunctionalTests;
 /// Hosts the real API against a real PostgreSQL (Testcontainers), migrated with the real migrations.
 /// Salons live under the root domain "mastera.test", e.g. http://barber-house.mastera.test.
 /// </summary>
-public sealed class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string RootDomain = "mastera.test";
     public const string SeededSlug = "barber-house";
@@ -33,6 +33,12 @@ public sealed class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAs
 
     /// <summary>Every email the API sent, instead of going to an SMTP server.</summary>
     public FakeEmailSender Emails { get; } = new();
+
+    /// <summary>The API's clock. Tests move it forward (e.g. to let a hold expire) and reset it.</summary>
+    public TestClock Clock { get; } = new();
+
+    /// <summary>Public booking calls allowed per minute; high so tests don't trip it, except the rate-limit test.</summary>
+    protected virtual int PublicBookingLimit => 10_000;
 
     public const string Password = "secret123";
 
@@ -116,10 +122,13 @@ public sealed class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAs
         builder.UseSetting("ConnectionStrings:Mastera", _container.GetConnectionString());
         builder.UseSetting("Tenancy:RootDomain", RootDomain);
         builder.UseSetting("App:DashboardUrl", "http://dashboard.test");
+        builder.UseSetting("RateLimits:PublicBookingPerMinute", PublicBookingLimit.ToString(System.Globalization.CultureInfo.InvariantCulture));
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            services.RemoveAll<IClock>();
+            services.AddSingleton<IClock>(Clock);
         });
     }
 }
@@ -138,4 +147,11 @@ public sealed class FakeEmailSender : IEmailSender
 
     public EmailMessage LastTo(string email) =>
         _sent.Last(m => string.Equals(m.To, email, StringComparison.OrdinalIgnoreCase));
+}
+
+public sealed class TestClock : IClock
+{
+    public Duration Offset { get; set; } = Duration.Zero;
+
+    public Instant GetCurrentInstant() => SystemClock.Instance.GetCurrentInstant() + Offset;
 }

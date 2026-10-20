@@ -20,9 +20,17 @@ public static class DbContextOptionsBuilderExtensions
                 npgsql.MigrationsAssembly(typeof(MasteraDbContext).Assembly.GetName().Name);
             })
             .AddInterceptors(TenantSaveChangesInterceptor.Instance, TenantConnectionInterceptor.Instance)
-            // Runs after Migrate(), EnsureCreated() and `dotnet ef database update`: every tenant-owned table gets its policy.
-            .UseSeeding((context, _) => TenantRowLevelSecurity.EnsureAll(context))
-            .UseAsyncSeeding((context, _, cancellationToken) => TenantRowLevelSecurity.EnsureAllAsync(context, cancellationToken));
+            // Runs after Migrate(), EnsureCreated() and `dotnet ef database update`: row-level security and overlap constraints.
+            .UseSeeding((context, _) =>
+            {
+                TenantRowLevelSecurity.EnsureAll(context);
+                BookingConstraints.Ensure(context);
+            })
+            .UseAsyncSeeding(async (context, _, cancellationToken) =>
+            {
+                await TenantRowLevelSecurity.EnsureAllAsync(context, cancellationToken);
+                await BookingConstraints.EnsureAsync(context, cancellationToken);
+            });
     }
 
     public static DbContextOptionsBuilder<TContext> UseMastera<TContext>(

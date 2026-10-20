@@ -1,5 +1,7 @@
 using Mastera.Application.Availability;
+using Mastera.Application.Bookings;
 using Mastera.Application.Catalog;
+using Mastera.Application.Clients;
 using Mastera.Application.Common;
 using Mastera.Application.Email;
 using Mastera.Application.Invitations;
@@ -50,7 +52,9 @@ public static class DependencyInjection
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
         services.AddScoped<ITenantSettings, TenantLookup>();
-        services.AddSingleton<IBusyTimeSource, EmptyBusyTimeSource>();
+        services.AddScoped<IBusyTimeSource, BookingBusyTimeSource>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IClientRepository, ClientRepository>();
 
         // EmailOptions and AppLinkOptions are bound to configuration by the host (see Program.cs).
         services.AddScoped<IEmailSender, SmtpEmailSender>();
