@@ -60,6 +60,14 @@ public class MasteraDbContext : IdentityUserContext<ApplicationUser, Guid>
 
     public DbSet<BlockedTime> BlockedTimes => Set<BlockedTime>();
 
+    public DbSet<Outbox.OutboxMessage> OutboxMessages => Set<Outbox.OutboxMessage>();
+
+    public DbSet<Outbox.NotificationLogEntry> NotificationLog => Set<Outbox.NotificationLogEntry>();
+
+    public DbSet<Outbox.ScheduledReminder> ScheduledReminders => Set<Outbox.ScheduledReminder>();
+
+    public DbSet<Outbox.TelegramLinkRequest> TelegramLinkRequests => Set<Outbox.TelegramLinkRequest>();
+
     /// <summary>
     /// The tenant every query is filtered by and every write is stamped with.
     /// Read by EF Core each time a query runs, and by the connection interceptor for row-level security.

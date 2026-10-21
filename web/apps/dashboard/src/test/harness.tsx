@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll } from 'vitest';
 import { createApiClient, type Me } from '@mastera/api-client';
 import { createI18n } from '@mastera/i18n';
 import { App } from '../App';
+import { noRealtime, type Realtime } from '../notifications/realtime';
 import { createTenantStore } from '../tenant/tenantStore';
 
 export const baseUrl = 'http://api.test';
@@ -35,11 +36,11 @@ export function signedIn(me: Me = owner) {
   server.use(http.get(`${baseUrl}/api/auth/me`, () => HttpResponse.json(me)));
 }
 
-export function renderApp(options: { language?: string; path?: string } = {}) {
+export function renderApp(options: { language?: string; path?: string; realtime?: Realtime } = {}) {
   window.history.replaceState(null, '', options.path ?? '/');
   const tenantStore = createTenantStore();
   const api = createApiClient({ baseUrl, getTenant: tenantStore.get });
-  render(<App i18n={createI18n(options.language ?? 'en')} api={api} tenantStore={tenantStore} />);
+  render(<App i18n={createI18n(options.language ?? 'en')} api={api} tenantStore={tenantStore} realtime={options.realtime ?? noRealtime} />);
   return { tenantStore };
 }
 

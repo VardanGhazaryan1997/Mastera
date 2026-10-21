@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Mastera.Api.Auth;
 using Mastera.Api.Common;
+using Mastera.Api.Notifications;
 using Mastera.Application.Memberships;
 using Mastera.Application.Tenancy;
 using Mastera.Domain.Tenants;
@@ -56,9 +57,9 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next, IOptions<Te
                 AddMembershipClaims(context.User, membership);
             }
         }
-        else if (userId is { } id && context.Request.Headers.TryGetValue(MasteraClaims.TenantHeader, out var header))
+        else if (userId is { } id && RequestedSalon(context) is { } requested)
         {
-            var membership = TenantSlug.TryCreate(header.ToString(), out var slug)
+            var membership = TenantSlug.TryCreate(requested, out var slug)
                 ? await memberships.FindAsync(id, slug, context.RequestAborted)
                 : null;
 
@@ -73,6 +74,23 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next, IOptions<Te
         }
 
         await next(context);
+    }
+
+    /// <summary>
+    /// The dashboard's salon: the X-Mastera-Tenant header, or for the live-notification hub (browsers can't send
+    /// headers on WebSockets) the "tenant" query parameter.
+    /// </summary>
+    private static string? RequestedSalon(HttpContext context)
+    {
+        if (context.Request.Headers.TryGetValue(MasteraClaims.TenantHeader, out var header))
+        {
+            return header.ToString();
+        }
+
+        return context.Request.Path.StartsWithSegments(NotificationEndpoints.HubPath)
+            && context.Request.Query.TryGetValue("tenant", out var query)
+                ? query.ToString()
+                : null;
     }
 
     private static Guid? GetUserId(ClaimsPrincipal user) =>

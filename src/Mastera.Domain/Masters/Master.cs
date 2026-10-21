@@ -38,6 +38,9 @@ public sealed class Master : Entity<MasterId>, ITenantOwned
     /// <summary>The user account of this master, once they accepted an invitation.</summary>
     public Guid? UserId { get; private set; }
 
+    /// <summary>Task 6.5: the Telegram chat that gets this master's booking notifications.</summary>
+    public long? TelegramChatId { get; private set; }
+
     /// <summary>Inactive masters are hidden from booking but keep their history.</summary>
     public bool IsActive { get; private set; }
 
@@ -74,6 +77,10 @@ public sealed class Master : Entity<MasterId>, ITenantOwned
 
         UserId = userId;
     }
+
+    public void LinkTelegram(long chatId) => TelegramChatId = chatId;
+
+    public void UnlinkTelegram() => TelegramChatId = null;
 
     public bool Offers(ServiceId serviceId) => _services.Any(s => s.ServiceId == serviceId);
 

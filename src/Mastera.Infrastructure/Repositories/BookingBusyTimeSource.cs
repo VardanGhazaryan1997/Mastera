@@ -12,15 +12,21 @@ namespace Mastera.Infrastructure.Repositories;
 public sealed class BookingBusyTimeSource(MasteraDbContext db, IClock clock) : IBusyTimeSource
 {
     public async Task<IReadOnlyDictionary<MasterId, IReadOnlyList<BusyInterval>>> GetBusyAsync(
-        IReadOnlyCollection<MasterId> masterIds, Instant from, Instant to, CancellationToken cancellationToken)
+        IReadOnlyCollection<MasterId> masterIds, Instant from, Instant to, BookingId? ignoreBooking, CancellationToken cancellationToken)
     {
         var now = clock.GetCurrentInstant();
         var ids = masterIds.ToList();
 
-        var bookings = await db.Bookings.AsNoTracking()
+        var bookingQuery = db.Bookings.AsNoTracking()
             .Where(b => ids.Contains(b.MasterId)
                 && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed)
-                && b.Start < to && from < b.End)
+                && b.Start < to && from < b.End);
+        if (ignoreBooking is { } ignored)
+        {
+            bookingQuery = bookingQuery.Where(b => b.Id != ignored);
+        }
+
+        var bookings = await bookingQuery
             .Select(b => new { b.MasterId, b.Start, b.End })
             .ToListAsync(cancellationToken);
 

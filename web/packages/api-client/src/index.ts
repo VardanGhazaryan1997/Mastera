@@ -162,6 +162,35 @@ export interface Availability {
   slots: AvailableSlot[];
 }
 
+/** Task 6.3: what the live-notification hub sends (also shown in the bell). */
+export type NotificationKind = 'booking.created' | 'booking.confirmed' | 'booking.cancelled' | 'booking.rescheduled';
+
+export interface LiveNotification {
+  kind: NotificationKind;
+  bookingId: string;
+  masterId: string;
+  masterName: string;
+  serviceName: string;
+  clientName: string;
+  start: string;
+  occurredAt: string;
+}
+
+/** Tasks 5.6/5.8: the salon's booking rules. */
+export interface BookingSettings {
+  hideClientPhoneFromMasters: boolean;
+  cancellationWindowHours: number;
+}
+
+/** Task 6.5: a one-time link that connects a master's Telegram. */
+export interface TelegramLink {
+  url: string;
+  expiresAt: string;
+  linked: boolean;
+}
+
+export const NOTIFICATIONS_HUB = '/hubs/notifications';
+
 export const TENANT_HEADER = 'X-Mastera-Tenant';
 
 export interface ApiClientOptions {
@@ -270,6 +299,13 @@ export function createApiClient({ baseUrl, fetch: fetchImpl = fetch, getTenant }
     },
     getInvitation: (token: string) =>
       json<InvitationDetails>(request(`/api/invitations/${encodeURIComponent(token)}`, {}, false)),
+    getBookingSettings: () => json<BookingSettings>(request('/api/settings/booking')),
+    updateBookingSettings: (input: BookingSettings) =>
+      json<BookingSettings>(sendJson('PUT', '/api/settings/booking', input)),
+    createTelegramLink: () => json<TelegramLink>(sendJson('POST', '/api/telegram/link')),
+    async unlinkTelegram(): Promise<void> {
+      await sendJson('DELETE', '/api/telegram/link');
+    },
     async acceptInvitation(input: { token: string; displayName?: string; password?: string }): Promise<void> {
       await sendJson('POST', '/api/invitations/accept', input, false);
     },

@@ -43,6 +43,12 @@ public sealed class Tenant : Entity<TenantId>
 
     public Instant CreatedAt { get; private init; }
 
+    /// <summary>Task 5.8: masters see client phone numbers masked (owners worry about masters taking clients with them).</summary>
+    public bool HideClientPhoneFromMasters { get; private set; }
+
+    /// <summary>Task 5.6: clients may cancel or move online up to this many hours before the start.</summary>
+    public int CancellationWindowHours { get; private set; } = 2;
+
     public static Tenant Create(
         string? name,
         TenantSlug slug,
@@ -60,6 +66,17 @@ public sealed class Tenant : Entity<TenantId>
     }
 
     public void Rename(string? name) => Name = NormalizeName(name);
+
+    public void ChangeBookingSettings(bool hideClientPhoneFromMasters, int cancellationWindowHours)
+    {
+        if (cancellationWindowHours is < 0 or > 168)
+        {
+            throw new DomainException("tenant.cancellation_window.invalid", "The cancellation window must be 0–168 hours.");
+        }
+
+        HideClientPhoneFromMasters = hideClientPhoneFromMasters;
+        CancellationWindowHours = cancellationWindowHours;
+    }
 
     public void ChangeRegionalSettings(TimeZoneId timeZone, Currency currency, Language defaultLanguage)
     {

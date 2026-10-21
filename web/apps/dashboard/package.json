@@ -14,6 +14,7 @@
     "@mastera/api-client": "workspace:*",
     "@mastera/i18n": "workspace:*",
     "@mastera/ui": "workspace:*",
+    "@microsoft/signalr": "10.0.0",
     "@tanstack/react-query": "5.104.5",
     "react": "19.2.9",
     "react-dom": "19.2.9"

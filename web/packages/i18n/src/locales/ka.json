@@ -183,5 +183,31 @@
       "date": "აირჩიეთ პირველი დღე.",
       "cycle": "ცვლებში საჭიროა მინიმუმ 1 სამუშაო და 1 დასვენების დღე, ჯამში არაუმეტეს 28-ისა."
     }
+  },
+  "notifications": {
+    "bell": "შეტყობინებები",
+    "bellUnread": "შეტყობინებები, ახალი: {{count}}",
+    "title": "შეტყობინებები",
+    "empty": "ჯერ არაფერია ახალი.",
+    "walkIn": "ჩაწერის გარეშე",
+    "kind": {
+      "booking.created": "ახალი ჩაწერა: {{client}} — {{service}}, {{master}}, {{time}}",
+      "booking.confirmed": "დადასტურდა: {{client}} — {{service}}, {{time}}",
+      "booking.cancelled": "გაუქმდა: {{client}} — {{service}}, {{master}}, {{time}}",
+      "booking.rescheduled": "გადატანილია: {{client}} — {{service}}, {{master}}, ახლა {{time}}"
+    }
+  },
+  "bookingRules": {
+    "title": "ჩაწერის წესები",
+    "window": "კლიენტს შეუძლია ონლაინ გაუქმება ან გადატანა ვიზიტამდე (საათით ადრე)",
+    "windowInvalid": "შეიყვანეთ საათების მთელი რიცხვი 0-დან 168-მდე.",
+    "hidePhones": "კლიენტების ნომრების დამალვა ოსტატებისთვის"
+  },
+  "telegram": {
+    "title": "შეტყობინებები Telegram-ში",
+    "intro": "მიიღეთ შეტყობინება Telegram-ში ყოველი ახალი, გადატანილი ან გაუქმებული ჩაწერის შესახებ.",
+    "connect": "Telegram-ის დაკავშირება",
+    "open": "გახსენით Telegram და დააჭირეთ «Start»-ს",
+    "expires": "(ბმული მოქმედებს 30 წუთი)"
   }
 }

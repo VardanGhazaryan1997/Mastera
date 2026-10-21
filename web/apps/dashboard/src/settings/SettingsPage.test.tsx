@@ -1,10 +1,14 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { baseUrl, openPage, renderApp, server, signedIn, setupMockServer } from '../test/harness';
 
 setupMockServer();
+
+beforeEach(() => {
+  server.use(http.get(`${baseUrl}/api/settings/booking`, () => HttpResponse.json({ hideClientPhoneFromMasters: false, cancellationWindowHours: 2 })));
+});
 
 describe('Settings: team', () => {
   it('lists the team of the active salon', async () => {

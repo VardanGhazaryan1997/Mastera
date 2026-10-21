@@ -23,4 +23,10 @@ public sealed class AppLinkOptions
 
     /// <summary>Where the dashboard runs, e.g. http://localhost:5173 or https://app.mastera.ge.</summary>
     public Uri DashboardUrl { get; set; } = new("http://localhost:5173");
+
+    /// <summary>The public booking site of a salon; {slug} is replaced, e.g. https://{slug}.mastera.ge.</summary>
+    public string BookingSiteUrl { get; set; } = "http://{slug}.localhost:5174";
+
+    /// <summary>Signs the clients' "manage booking" links. Set a long random value in production.</summary>
+    public string LinkSecret { get; set; } = "development-only-link-secret-change-me";
 }

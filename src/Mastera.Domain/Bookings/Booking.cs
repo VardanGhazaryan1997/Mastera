@@ -92,7 +92,7 @@ public sealed class Booking : Entity<BookingId>, ITenantOwned
             throw new DomainException("booking.client.required", "A booking needs a client or at least a name.");
         }
 
-        return new Booking(BookingId.New())
+        var booking = new Booking(BookingId.New())
         {
             MasterId = masterId,
             ServiceId = serviceId,
@@ -106,6 +106,24 @@ public sealed class Booking : Entity<BookingId>, ITenantOwned
             Note = Text.Optional(note, NoteMaxLength, "booking.note.length", "The note"),
             CreatedAt = now,
         };
+        booking.Raise(new BookingCreatedEvent(booking.Id));
+        return booking;
+    }
+
+    /// <summary>Moves the booking to a new start, keeping its length.</summary>
+    public void Reschedule(Instant newStart)
+    {
+        EnsureStatus(BookingStatus.Pending, BookingStatus.Confirmed);
+        if (newStart == Start)
+        {
+            return;
+        }
+
+        var previous = Start;
+        var length = Length;
+        Start = newStart;
+        End = newStart + length;
+        Raise(new BookingRescheduledEvent(Id, previous));
     }
 
     public bool Overlaps(Instant start, Instant end) => Start < end && start < End;
@@ -114,6 +132,7 @@ public sealed class Booking : Entity<BookingId>, ITenantOwned
     {
         EnsureStatus(BookingStatus.Pending);
         Status = BookingStatus.Confirmed;
+        Raise(new BookingConfirmedEvent(Id));
     }
 
     public void CancelByClient(Instant now) => Cancel(BookingStatus.CancelledByClient, now);
@@ -145,6 +164,7 @@ public sealed class Booking : Entity<BookingId>, ITenantOwned
         EnsureStatus(BookingStatus.Pending, BookingStatus.Confirmed);
         Status = status;
         CancelledAt = now;
+        Raise(new BookingCancelledEvent(Id, status == BookingStatus.CancelledBySalon));
     }
 
     private void EnsureStarted(Instant now)

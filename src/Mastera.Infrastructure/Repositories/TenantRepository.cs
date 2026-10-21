@@ -10,5 +10,8 @@ public sealed class TenantRepository(MasteraDbContext db) : ITenantRepository
     public Task<bool> SlugExistsAsync(TenantSlug slug, CancellationToken cancellationToken) =>
         db.Tenants.AnyAsync(t => t.Slug == slug, cancellationToken);
 
+    public Task<Tenant?> FindAsync(TenantId id, CancellationToken cancellationToken) =>
+        db.Tenants.SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
+
     public void Add(Tenant tenant) => db.Tenants.Add(tenant);
 }

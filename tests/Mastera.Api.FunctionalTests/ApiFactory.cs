@@ -9,5 +9,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+
+        // No database here: keep the notification worker from polling one.
+        builder.UseSetting("Notifications:WorkerEnabled", "false");
     }
 }

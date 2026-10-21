@@ -54,5 +54,9 @@ public sealed record PhoneNumber
         return new PhoneNumber(normalized);
     }
 
+    /// <summary>Task 5.8: "+995•••••••456" — enough to recognise a call, not enough to copy the number.</summary>
+    public string Masked() =>
+        Value.Length <= 7 ? new string('•', Value.Length) : Value[..4] + new string('•', Value.Length - 7) + Value[^3..];
+
     public override string ToString() => Value;
 }

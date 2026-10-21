@@ -5,6 +5,8 @@ import { useTranslation } from '@mastera/i18n';
 import { Button, Select } from '@mastera/ui';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { MastersPage } from '../masters/MastersPage';
+import { NotificationCenter } from '../notifications/NotificationCenter';
+import type { Realtime } from '../notifications/realtime';
 import { MySchedulePage } from '../schedule/MySchedulePage';
 import { ServicesPage } from '../services/ServicesPage';
 import { SettingsPage } from '../settings/SettingsPage';
@@ -15,9 +17,10 @@ interface Props {
   api: ApiClient;
   me: Me;
   tenantStore: TenantStore;
+  realtime: Realtime;
 }
 
-export function DashboardShell({ api, me, tenantStore }: Props) {
+export function DashboardShell({ api, me, tenantStore, realtime }: Props) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -42,7 +45,7 @@ export function DashboardShell({ api, me, tenantStore }: Props) {
   const logout = useMutation({
     mutationFn: () => api.logout(),
     onSuccess: () => {
-      for (const key of ['members', 'masters', 'services', 'categories', 'schedule', 'my-master']) queryClient.removeQueries({ queryKey: [key] });
+      for (const key of ['members', 'masters', 'services', 'categories', 'schedule', 'my-master', 'booking-settings']) queryClient.removeQueries({ queryKey: [key] });
       return queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
@@ -66,6 +69,7 @@ export function DashboardShell({ api, me, tenantStore }: Props) {
           )}
         </div>
         <div className="flex flex-wrap items-center gap-4">
+          {membership && <NotificationCenter realtime={realtime} salon={membership.slug} />}
           <span className="text-sm text-neutral-700">{me.displayName}</span>
           <LanguageSwitcher />
           <Button variant="secondary" onClick={() => logout.mutate()} disabled={logout.isPending}>

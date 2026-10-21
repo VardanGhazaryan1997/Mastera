@@ -183,5 +183,31 @@
       "date": "Выберите первый день.",
       "cycle": "В сменах нужен минимум 1 рабочий и 1 выходной день, всего не больше 28."
     }
+  },
+  "notifications": {
+    "bell": "Уведомления",
+    "bellUnread": "Уведомления, новых: {{count}}",
+    "title": "Уведомления",
+    "empty": "Пока ничего нового.",
+    "walkIn": "Без записи",
+    "kind": {
+      "booking.created": "Новая запись: {{client}} — {{service}} у {{master}}, {{time}}",
+      "booking.confirmed": "Подтверждено: {{client}} — {{service}}, {{time}}",
+      "booking.cancelled": "Отмена: {{client}} — {{service}} у {{master}}, {{time}}",
+      "booking.rescheduled": "Перенос: {{client}} — {{service}} у {{master}}, теперь {{time}}"
+    }
+  },
+  "bookingRules": {
+    "title": "Правила записи",
+    "window": "Клиент может отменить или перенести онлайн не позже чем (часов до визита)",
+    "windowInvalid": "Введите целое число часов от 0 до 168.",
+    "hidePhones": "Скрывать номера клиентов от мастеров"
+  },
+  "telegram": {
+    "title": "Уведомления в Telegram",
+    "intro": "Получайте сообщение в Telegram о каждой новой, перенесённой или отменённой записи.",
+    "connect": "Подключить Telegram",
+    "open": "Откройте Telegram и нажмите «Start»",
+    "expires": "(ссылка действует 30 минут)"
   }
 }

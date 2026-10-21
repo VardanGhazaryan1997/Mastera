@@ -56,6 +56,14 @@ public static class DependencyInjection
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
 
+        // Notifications (Epic 6). The SMS and Telegram senders are typed HttpClients registered by the host.
+        services.AddScoped<Application.Notifications.IBookingLinks, Notifications.BookingLinks>();
+        services.AddScoped<Application.Notifications.INotificationLog, Outbox.NotificationLog>();
+        services.AddScoped<Application.Notifications.IReminderScheduler, Outbox.ReminderScheduler>();
+        services.AddScoped<Application.Notifications.ITelegramLinkStore, Outbox.TelegramLinkStore>();
+        services.AddSingleton<Outbox.OutboxDispatcher>();
+        services.AddSingleton<Outbox.ReminderDispatcher>();
+
         // EmailOptions and AppLinkOptions are bound to configuration by the host (see Program.cs).
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IInvitationLinks, InvitationLinks>();

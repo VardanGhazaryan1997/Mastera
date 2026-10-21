@@ -40,4 +40,13 @@ public sealed class TenantLookup(MasteraDbContext db) : ITenantLookup, ITenantLo
             .SingleAsync(cancellationToken);
         return zone.ToDateTimeZone();
     }
+
+    public async Task<BookingSettings> GetBookingSettingsAsync(TenantId tenantId, CancellationToken cancellationToken)
+    {
+        var settings = await db.Tenants.AsNoTracking()
+            .Where(t => t.Id == tenantId)
+            .Select(t => new { t.HideClientPhoneFromMasters, t.CancellationWindowHours, t.DefaultLanguage })
+            .SingleAsync(cancellationToken);
+        return new BookingSettings(settings.HideClientPhoneFromMasters, settings.CancellationWindowHours, settings.DefaultLanguage);
+    }
 }

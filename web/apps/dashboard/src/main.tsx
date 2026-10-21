@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createApiClient } from '@mastera/api-client';
 import { createI18n } from '@mastera/i18n';
 import { App } from './App';
+import { createSignalRRealtime } from './notifications/realtime';
 import { createTenantStore } from './tenant/tenantStore';
 import './styles.css';
 
@@ -29,6 +30,6 @@ const api = createApiClient({ baseUrl: '', getTenant: tenantStore.get });
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App i18n={i18n} api={api} tenantStore={tenantStore} />
+    <App i18n={i18n} api={api} tenantStore={tenantStore} realtime={createSignalRRealtime()} />
   </StrictMode>,
 );

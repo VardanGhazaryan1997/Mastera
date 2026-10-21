@@ -5,6 +5,8 @@ using Mastera.Api.Common;
 using Mastera.Api.Catalog;
 using Mastera.Api.Invitations;
 using Mastera.Api.Masters;
+using Mastera.Api.Notifications;
+using Mastera.Api.Settings;
 using Mastera.Api.Schedules;
 using Mastera.Api.Salons;
 using Mastera.Api.Tenancy;
@@ -12,6 +14,8 @@ using Mastera.Application;
 using Mastera.Application.Users;
 using Mastera.Infrastructure;
 using Mastera.Infrastructure.Email;
+using Mastera.Infrastructure.Notifications;
+using Mastera.Application.Notifications;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Serilog;
@@ -54,6 +58,16 @@ builder.Services.AddInfrastructure();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.Configure<AppLinkOptions>(builder.Configuration.GetSection(AppLinkOptions.SectionName));
 
+// Epic 6: notifications. SMS and Telegram are only logged until a gateway / bot token is configured.
+builder.Services.Configure<SmsOptions>(builder.Configuration.GetSection(SmsOptions.SectionName));
+builder.Services.Configure<TelegramOptions>(builder.Configuration.GetSection(TelegramOptions.SectionName));
+builder.Services.Configure<NotificationWorkerOptions>(builder.Configuration.GetSection(NotificationWorkerOptions.SectionName));
+builder.Services.AddHttpClient<ISmsSender, HttpSmsSender>();
+builder.Services.AddHttpClient<ITelegramSender, TelegramBotSender>();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IRealtimeNotifier, SignalRNotifier>();
+builder.Services.AddHostedService<NotificationWorker>();
+
 var app = builder.Build();
 
 // Unhandled exceptions and empty error responses (404, 405, ...) become RFC 9457 ProblemDetails.
@@ -83,6 +97,8 @@ app.MapInvitationEndpoints();
 app.MapScheduleEndpoints();
 app.MapAvailabilityEndpoints();
 app.MapBookingEndpoints();
+app.MapSettingsEndpoints();
+app.MapNotificationEndpoints();
 
 app.Run();
 

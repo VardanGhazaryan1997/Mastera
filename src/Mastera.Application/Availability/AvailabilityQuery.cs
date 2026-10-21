@@ -28,7 +28,12 @@ public sealed class AvailabilityQuery(
     IBusyTimeSource busyTime,
     IClock clock)
 {
-    public async Task<Result<AvailabilityView>> GetAsync(Guid serviceId, Guid? masterId, string? date, CancellationToken ct)
+    public Task<Result<AvailabilityView>> GetAsync(Guid serviceId, Guid? masterId, string? date, CancellationToken ct) =>
+        GetAsync(serviceId, masterId, date, null, ct);
+
+    /// <param name="ignoreBooking">A booking being moved: its own time counts as free (task 5.6).</param>
+    public async Task<Result<AvailabilityView>> GetAsync(
+        Guid serviceId, Guid? masterId, string? date, Domain.Bookings.BookingId? ignoreBooking, CancellationToken ct)
     {
         if (tenantContext.Current is not { } salon)
         {
@@ -64,7 +69,7 @@ public sealed class AvailabilityQuery(
         var ids = candidates.Select(m => m.Id).ToList();
         var schedulesById = (await schedules.ListAsync(ids, ct)).ToDictionary(s => s.MasterId);
         var dayStart = zone.AtStartOfDay(day).ToInstant();
-        var busy = await busyTime.GetBusyAsync(ids, dayStart, zone.AtStartOfDay(day.PlusDays(1)).ToInstant(), ct);
+        var busy = await busyTime.GetBusyAsync(ids, dayStart, zone.AtStartOfDay(day.PlusDays(1)).ToInstant(), ignoreBooking, ct);
 
         var inputs = candidates.Select(m => new MasterAvailabilityInput(
             m.Id.Value,

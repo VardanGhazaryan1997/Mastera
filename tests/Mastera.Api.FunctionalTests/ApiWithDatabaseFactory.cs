@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using Mastera.Application.Email;
+using Mastera.Application.Notifications;
 using Mastera.Domain.Memberships;
 using Mastera.Domain.Tenants;
 using Mastera.Infrastructure.Identity;
@@ -33,6 +34,14 @@ public class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAsyncLife
 
     /// <summary>Every email the API sent, instead of going to an SMTP server.</summary>
     public FakeEmailSender Emails { get; } = new();
+
+    /// <summary>Every SMS the API sent.</summary>
+    public FakeSmsSender Sms { get; } = new();
+
+    /// <summary>Every Telegram message the API sent.</summary>
+    public FakeTelegramSender Telegram { get; } = new();
+
+    public const string TelegramWebhookSecret = "test-webhook-secret";
 
     /// <summary>The API's clock. Tests move it forward (e.g. to let a hold expire) and reset it.</summary>
     public TestClock Clock { get; } = new();
@@ -122,11 +131,19 @@ public class ApiWithDatabaseFactory : WebApplicationFactory<Program>, IAsyncLife
         builder.UseSetting("ConnectionStrings:Mastera", _container.GetConnectionString());
         builder.UseSetting("Tenancy:RootDomain", RootDomain);
         builder.UseSetting("App:DashboardUrl", "http://dashboard.test");
+        builder.UseSetting("App:BookingSiteUrl", "http://{slug}.book.test");
+        builder.UseSetting("Notifications:WorkerEnabled", "false");
+        builder.UseSetting("Telegram:WebhookSecret", TelegramWebhookSecret);
+        builder.UseSetting("Telegram:BotName", "MasteraTestBot");
         builder.UseSetting("RateLimits:PublicBookingPerMinute", PublicBookingLimit.ToString(System.Globalization.CultureInfo.InvariantCulture));
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            services.RemoveAll<ISmsSender>();
+            services.AddSingleton<ISmsSender>(Sms);
+            services.RemoveAll<ITelegramSender>();
+            services.AddSingleton<ITelegramSender>(Telegram);
             services.RemoveAll<IClock>();
             services.AddSingleton<IClock>(Clock);
         });
@@ -154,4 +171,32 @@ public sealed class TestClock : IClock
     public Duration Offset { get; set; } = Duration.Zero;
 
     public Instant GetCurrentInstant() => SystemClock.Instance.GetCurrentInstant() + Offset;
+}
+
+public sealed class FakeSmsSender : ISmsSender
+{
+    private readonly ConcurrentQueue<SmsMessage> _sent = new();
+
+    public IReadOnlyCollection<SmsMessage> Sent => _sent.ToArray();
+
+    public IReadOnlyList<SmsMessage> To(string e164) => _sent.Where(m => m.To.Value == e164).ToList();
+
+    public Task SendAsync(SmsMessage message, CancellationToken cancellationToken)
+    {
+        _sent.Enqueue(message);
+        return Task.CompletedTask;
+    }
+}
+
+public sealed class FakeTelegramSender : ITelegramSender
+{
+    private readonly ConcurrentQueue<(long ChatId, string Text)> _sent = new();
+
+    public IReadOnlyList<string> To(long chatId) => _sent.Where(m => m.ChatId == chatId).Select(m => m.Text).ToList();
+
+    public Task SendAsync(long chatId, string text, CancellationToken cancellationToken)
+    {
+        _sent.Enqueue((chatId, text));
+        return Task.CompletedTask;
+    }
 }

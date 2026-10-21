@@ -23,6 +23,11 @@ public static class DependencyInjection
         services.AddScoped<ScheduleHandler>();
         services.AddScoped<AvailabilityQuery>();
         services.AddScoped<BookingHandler>();
+        services.AddScoped<ClientBookingHandler>();
+        services.AddScoped<Settings.SalonSettingsHandler>();
+        services.AddScoped<Notifications.BookingNotificationHandler>();
+        services.AddScoped<Notifications.IDomainEventHandler>(sp => sp.GetRequiredService<Notifications.BookingNotificationHandler>());
+        services.AddScoped<Notifications.TelegramLinkHandler>();
 
         return services;
     }

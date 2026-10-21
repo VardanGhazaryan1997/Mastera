@@ -1,7 +1,7 @@
 {
   "$comment": "Free, OSI/FSF-approved licenses that permit commercial SaaS use. Anything else fails CI. Add a license only after reviewing it.",
   "spdx": [
-    "MIT", "MIT-0", "ISC", "0BSD",
+    "MIT", "MIT-0", "ISC", "0BSD", "Unlicense",
     "Apache-2.0",
     "BSD-2-Clause", "BSD-3-Clause",
     "PostgreSQL",

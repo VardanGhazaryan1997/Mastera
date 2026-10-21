@@ -41,5 +41,9 @@ public sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             .IsRequired();
 
         builder.Property(t => t.CreatedAt).IsRequired();
+        builder.Property(t => t.HideClientPhoneFromMasters).HasDefaultValue(false);
+
+        // Existing salons get the 2-hour window; the sentinel makes EF always write the value we set (even 0).
+        builder.Property(t => t.CancellationWindowHours).HasDefaultValue(2).HasSentinel(-1);
     }
 }

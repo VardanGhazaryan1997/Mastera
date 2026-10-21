@@ -16,6 +16,7 @@ public sealed class MasterConfiguration : IEntityTypeConfiguration<Master>
         builder.Property(m => m.Id).ValueGeneratedNever();
         builder.Property(m => m.DisplayName).HasMaxLength(Master.DisplayNameMaxLength).IsRequired();
         builder.Property(m => m.Bio).HasMaxLength(Master.BioMaxLength);
+        builder.Property(m => m.TelegramChatId);
         builder.HasIndex(m => m.UserId);
 
         builder.HasMany(m => m.Services)

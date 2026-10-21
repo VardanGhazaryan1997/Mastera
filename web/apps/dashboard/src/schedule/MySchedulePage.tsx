@@ -3,6 +3,7 @@ import { ApiError, type ApiClient } from '@mastera/api-client';
 import { useTranslation } from '@mastera/i18n';
 import { ErrorNotice } from '../common/Notice';
 import { ScheduleEditor } from './ScheduleEditor';
+import { TelegramConnect } from './TelegramConnect';
 
 /** For masters: their own schedule. They manage days off; the salon sets regular hours. */
 export function MySchedulePage({ api, salon }: { api: ApiClient; salon: string }) {
@@ -18,5 +19,10 @@ export function MySchedulePage({ api, salon }: { api: ApiClient; salon: string }
     );
   }
 
-  return <ScheduleEditor api={api} masterId={me.data.id} canEditPattern={false} />;
+  return (
+    <div className="flex flex-col gap-6">
+      <TelegramConnect api={api} />
+      <ScheduleEditor api={api} masterId={me.data.id} canEditPattern={false} />
+    </div>
+  );
 }

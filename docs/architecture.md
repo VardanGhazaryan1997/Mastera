@@ -34,5 +34,19 @@ A PostgreSQL exclusion constraint (`btree_gist`) on `(master_id, period)` for ac
 
 ## Notifications
 
-Domain events → outbox table (same transaction) → background processor → SignalR, Telegram, SMS,
-email. Reminders are Quartz.NET jobs.
+- Entities raise domain events (`BookingCreatedEvent`, `…Cancelled`, `…Rescheduled`, `…Confirmed`).
+  `OutboxInterceptor` turns them into `OutboxMessages` rows in the **same transaction** as the change.
+- `NotificationWorker` (a hosted service) runs `OutboxDispatcher` every few seconds. Rows are taken with
+  `FOR UPDATE SKIP LOCKED`, so several app instances never handle the same message. Each message is handled in
+  its own scope inside its salon; failures are retried up to 10 times.
+- `BookingNotificationHandler` sends: a live SignalR message (`/hubs/notifications?tenant={slug}`; groups for
+  the front desk and per master), Telegram to the master, SMS/email to the client. Every send is first
+  recorded in `NotificationLog`, so a message delivered twice never texts anyone twice.
+- Reminders (24 h and 2 h before) are rows in `ScheduledReminders`, replaced when a booking moves and deleted
+  when it is cancelled; the same worker sends the due ones. (The plan said Quartz.NET; one table-driven loop
+  is simpler and needs no extra library.)
+- Clients' "change or cancel" links carry the booking id signed with HMAC-SHA256 (`App:LinkSecret`), so no
+  secret is stored and the same link works in every SMS.
+- Configuration: `Sms:Url`/`Sms:ApiKey` (a generic JSON gateway) and `Telegram:BotToken`/`BotName`/`WebhookSecret`.
+  Without them, SMS and Telegram messages are only written to the log. The Telegram webhook is
+  `POST /api/telegram/webhook` (set it with `setWebhook` and the same `secret_token`).

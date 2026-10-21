@@ -19,7 +19,8 @@ public static class DbContextOptionsBuilderExtensions
                 npgsql.MigrationsHistoryTable(MigrationsHistoryTable);
                 npgsql.MigrationsAssembly(typeof(MasteraDbContext).Assembly.GetName().Name);
             })
-            .AddInterceptors(TenantSaveChangesInterceptor.Instance, TenantConnectionInterceptor.Instance)
+            // Tenant stamping/checks first, then domain events → outbox rows (task 6.1).
+            .AddInterceptors(TenantSaveChangesInterceptor.Instance, Outbox.OutboxInterceptor.Instance, TenantConnectionInterceptor.Instance)
             // Runs after Migrate(), EnsureCreated() and `dotnet ef database update`: row-level security and overlap constraints.
             .UseSeeding((context, _) =>
             {

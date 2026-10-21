@@ -34,7 +34,12 @@ public sealed record ManualBookingInput(
 
 public sealed record BlockTimeInput(Guid MasterId, DateTimeOffset Start, DateTimeOffset End, string? Reason);
 
-public sealed record BookingCreated(Guid Id, string Status, Guid MasterId, string MasterName, Guid ServiceId, string ServiceName, DateTimeOffset Start, DateTimeOffset End, decimal Price);
+/// <param name="ManageToken">Online bookings only: the secret for the client's "change or cancel" link (task 5.6).</param>
+public sealed record BookingCreated(Guid Id, string Status, Guid MasterId, string MasterName, Guid ServiceId, string ServiceName, DateTimeOffset Start, DateTimeOffset End, decimal Price, string? ManageToken = null);
+
+public sealed record CompleteBookingInput(decimal? FinalPrice);
+
+public sealed record BookingStatusView(Guid Id, string Status, decimal? FinalPrice);
 
 /// <summary>Tasks 5.3–5.5: holding a slot, booking online from a hold, and staff entering bookings and blocked time.</summary>
 public sealed class BookingHandler(
@@ -47,6 +52,7 @@ public sealed class BookingHandler(
     ITenantContext tenantContext,
     ICurrentUser currentUser,
     IUnitOfWork unitOfWork,
+    Notifications.IBookingLinks links,
     IClock clock)
 {
     public const string SlotTakenCode = "booking.slot_taken";
@@ -298,6 +304,7 @@ public sealed class BookingHandler(
 
         var master = await masters.FindAsync(booking.MasterId, ct);
         var service = await catalog.FindServiceAsync(booking.ServiceId, ct);
+        var manageToken = booking.Source == BookingSource.Online ? links.CreateManageToken(booking.Id) : null;
         return Result.Success(new BookingCreated(
             booking.Id.Value,
             booking.Status.ToString(),
@@ -307,7 +314,65 @@ public sealed class BookingHandler(
             service?.Name ?? string.Empty,
             booking.Start.ToDateTimeOffset(),
             booking.End.ToDateTimeOffset(),
-            booking.Price));
+            booking.Price,
+            manageToken));
+    }
+
+    /// <summary>Task 5.7: the salon confirms a pending booking.</summary>
+    public Task<Result<BookingStatusView>> ConfirmAsync(Guid id, CancellationToken ct) =>
+        ChangeAsync(id, (booking, _) => booking.Confirm(), null, ct);
+
+    /// <summary>Task 5.7: the salon cancels (the client is told by SMS).</summary>
+    public Task<Result<BookingStatusView>> CancelAsync(Guid id, CancellationToken ct) =>
+        ChangeAsync(id, (booking, now) => booking.CancelBySalon(now), null, ct);
+
+    /// <summary>Task 5.7: the visit happened; record what the client actually paid.</summary>
+    public Task<Result<BookingStatusView>> CompleteAsync(Guid id, CompleteBookingInput input, CancellationToken ct) =>
+        ChangeAsync(id, (booking, now) => booking.Complete(input?.FinalPrice, now), null, ct);
+
+    /// <summary>Task 5.7: the client didn't come. Counted on the client, so staff see it next time.</summary>
+    public Task<Result<BookingStatusView>> NoShowAsync(Guid id, CancellationToken ct) =>
+        ChangeAsync(
+            id,
+            (booking, now) => booking.MarkNoShow(now),
+            async booking =>
+            {
+                var client = booking.ClientId is { } clientId ? await clients.FindAsync(clientId, ct) : null;
+                client?.RecordNoShow();
+            },
+            ct);
+
+    private async Task<Result<BookingStatusView>> ChangeAsync(
+        Guid id, Action<Booking, Instant> change, Func<Booking, Task>? after, CancellationToken ct)
+    {
+        var booking = await bookings.FindAsync(new BookingId(id), ct);
+        if (booking is null)
+        {
+            return Result.Failure<BookingStatusView>(Error.NotFound("booking.not_found", "The booking was not found."));
+        }
+
+        var master = await masters.FindAsync(booking.MasterId, ct);
+        if (master is null || !CanManageCalendarOf(master))
+        {
+            return Result.Failure<BookingStatusView>(Forbidden());
+        }
+
+        try
+        {
+            change(booking, clock.GetCurrentInstant());
+        }
+        catch (DomainException e)
+        {
+            return Result.Failure<BookingStatusView>(Errors.FromDomain(e));
+        }
+
+        if (after is not null)
+        {
+            await after(booking);
+        }
+
+        await unitOfWork.SaveChangesAsync(ct);
+        return Result.Success(new BookingStatusView(booking.Id.Value, booking.Status.ToString(), booking.FinalPrice));
     }
 
     /// <summary>Staff at the desk manage every calendar; a master manages their own.</summary>

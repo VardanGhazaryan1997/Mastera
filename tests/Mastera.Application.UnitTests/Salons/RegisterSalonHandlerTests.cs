@@ -7,6 +7,9 @@ using Mastera.Domain.Tenants;
 using NodaTime;
 using NSubstitute;
 
+// NSubstitute argument specs (CreateAsync(default!, ..., default)) are not real calls, so xUnit1051 doesn't apply.
+#pragma warning disable xUnit1051
+
 namespace Mastera.Application.UnitTests.Salons;
 
 public sealed class RegisterSalonHandlerTests
@@ -149,6 +152,9 @@ public sealed class RegisterSalonHandlerTests
 
         public Task<bool> SlugExistsAsync(TenantSlug slug, CancellationToken cancellationToken) =>
             Task.FromResult(ExistingSlugs.Contains(slug.Value));
+
+        public Task<Tenant?> FindAsync(TenantId id, CancellationToken cancellationToken) =>
+            Task.FromResult(Added.FirstOrDefault(t => t.Id == id));
 
         public void Add(Tenant tenant) => Added.Add(tenant);
     }

@@ -183,5 +183,31 @@
       "date": "Choose the first day.",
       "cycle": "Shifts need at least 1 day on and 1 day off, 28 days at most."
     }
+  },
+  "notifications": {
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {{count}} new",
+    "title": "Notifications",
+    "empty": "Nothing new yet.",
+    "walkIn": "Walk-in",
+    "kind": {
+      "booking.created": "New booking: {{client}} — {{service}} with {{master}}, {{time}}",
+      "booking.confirmed": "Confirmed: {{client}} — {{service}}, {{time}}",
+      "booking.cancelled": "Cancelled: {{client}} — {{service}} with {{master}}, {{time}}",
+      "booking.rescheduled": "Moved: {{client}} — {{service}} with {{master}}, now {{time}}"
+    }
+  },
+  "bookingRules": {
+    "title": "Booking rules",
+    "window": "Clients can cancel or move online until (hours before)",
+    "windowInvalid": "Enter a whole number of hours from 0 to 168.",
+    "hidePhones": "Hide clients' phone numbers from masters"
+  },
+  "telegram": {
+    "title": "Telegram notifications",
+    "intro": "Get a message in Telegram for every new, moved or cancelled booking.",
+    "connect": "Connect Telegram",
+    "open": "Open Telegram and press Start",
+    "expires": "(the link works for 30 minutes)"
   }
 }
